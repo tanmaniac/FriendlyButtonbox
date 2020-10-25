@@ -3,8 +3,9 @@
 namespace buttonbox {
 void CALLBACK dispatchProcRd(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext) {
     // the pContext pointer is set to a pointer to a simconnect handle
-    HANDLE* simConnectHandlePtr = reinterpret_cast<HANDLE*>(pContext);
-    HANDLE& simConnectHandle = *simConnectHandlePtr;
+    //HANDLE* simConnectHandlePtr = reinterpret_cast<HANDLE*>(pContext);
+    //HANDLE& simConnectHandle = *simConnectHandlePtr;
+    SimAPI* simAPI = static_cast<SimAPI*>(pContext);
 
     HRESULT hr;
     switch (pData->dwID) {
@@ -12,8 +13,8 @@ void CALLBACK dispatchProcRd(SIMCONNECT_RECV* pData, DWORD cbData, void* pContex
         SIMCONNECT_RECV_EVENT* evt = (SIMCONNECT_RECV_EVENT*)pData;
         switch (evt->uEventID) {
         case EVERY_SECOND:
-            // Request information on the user aircraft
-            hr = SimConnect_RequestDataOnSimObjectType(simConnectHandle,
+            // Request information on current autopilot status
+            hr = SimConnect_RequestDataOnSimObjectType(simAPI->_simConnectHandle,
                                                        AUTOPILOT_DATA_REQUEST,
                                                        AUTOPILOT_DATA_DEFINITION,
                                                        0,
@@ -32,7 +33,9 @@ void CALLBACK dispatchProcRd(SIMCONNECT_RECV* pData, DWORD cbData, void* pContex
             AutopilotInfo* pAPStruct = (AutopilotInfo*)&pObjData->dwData;
             // Security check
             if (SUCCEEDED(StringCbLengthA(&pAPStruct->title[0], sizeof(pAPStruct->title), NULL))) {
+                simAPI->_stateBuffer->setStateByName("AutopilotState", *pAPStruct);
                 std::cout << "Has autopilot = " << pAPStruct->autopilotAvailable << std::endl;
+                std::cout << "Autopilot active: " << pAPStruct->autopilotMaster << std::endl;
                 std::cout << "FD active = " << pAPStruct->autopilotFlightDirectorActive
                           << std::endl;
             }
@@ -44,5 +47,17 @@ void CALLBACK dispatchProcRd(SIMCONNECT_RECV* pData, DWORD cbData, void* pContex
         break;
     }
     }
+}
+
+//------------- SimAPI member function definitions --------------
+HRESULT SimAPI::addAutopilotDataDefinitions() {
+    HRESULT hr = SimConnect_AddToDataDefinition(
+        _simConnectHandle, AUTOPILOT_DATA_DEFINITION, "Autopilot available", "bool");
+    hr = SimConnect_AddToDataDefinition(
+        _simConnectHandle, AUTOPILOT_DATA_DEFINITION, "Autopilot master", "bool");
+    hr = SimConnect_AddToDataDefinition(
+        _simConnectHandle, AUTOPILOT_DATA_DEFINITION, "Autopilot flight director active", "bool");
+
+    return hr;
 }
 } // namespace buttonbox

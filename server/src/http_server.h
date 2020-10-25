@@ -8,7 +8,12 @@
 namespace buttonbox {
 class HTTPServer {
 public:
-    HTTPServer() = default;
+    HTTPServer() {
+        _server.Get("/hi", [](const httplib::Request& req, httplib::Response& res) {
+            res.set_content("Hello World!", "text/plain");
+        });
+    }
+
     ~HTTPServer() {
         if (_server.is_running()) {
             _server.stop();
@@ -19,7 +24,7 @@ public:
         }
     }
 
-    void startListening(const std::string& host, int port);
+    void startListening(const std::string& address, int port);
 
 private:
     httplib::Server _server;

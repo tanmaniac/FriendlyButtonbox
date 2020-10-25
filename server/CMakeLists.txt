@@ -27,6 +27,6 @@ find_library(SIMCONNECT_LIBRARY
 ###################
 add_executable(main src/main.cpp 
 					src/sim_api.cpp 
-					src/http_server.cpp)
+					src/http_server.cpp "src/state_buffer.h")
 target_link_libraries(main ${SIMCONNECT_LIBRARY})
 file(COPY ${SIMCONNECT_INSTALL_DIR}/lib/SimConnect.dll DESTINATION ${PROJECT_BINARY_DIR})
