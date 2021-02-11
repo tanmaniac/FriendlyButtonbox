@@ -13,7 +13,7 @@ include_directories(third-party/cpp-httplib)
 
 # Simconnect, for actually connecting to Microsoft Flight Simulator
 # You might need to change the path to this
-set(SIMCONNECT_INSTALL_DIR "C:/Program Files/MSFS_SDK/SimConnect SDK")
+set(SIMCONNECT_INSTALL_DIR "C:/MSFS SDK/SimConnect SDK")
 include_directories("${SIMCONNECT_INSTALL_DIR}/include")
 link_directories("${SIMCONNECT_INSTALL_DIR}/lib")
 
